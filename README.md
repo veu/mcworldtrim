@@ -6,7 +6,7 @@ value in chunks to determine which regions can be safely deleted.
 
 ## Requirements
 
-* pymclevel (included in mcedit)
+* [pymclevel](https://github.com/mcedit/pymclevel)
 * scipy
 * numpy
 
