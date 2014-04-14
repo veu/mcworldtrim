@@ -132,12 +132,12 @@ class Application(object):
         return spawn, inhabited, connected, uninhabited, outside
     
     def show(self, region_data):
-        spawn, keep, connected, uninhabited, outside = self.analyze(region_data)
+        spawn, inhabited, connected, uninhabited, outside = self.analyze(region_data)
     
         # print info
         sys.stdout.write('total regions:       {0}\n'.format(len(region_data)))
         sys.stdout.write('spawn regions:       {0}\n'.format(len(spawn)))
-        sys.stdout.write('inhabited regions:   {0}\n'.format(len(keep)))
+        sys.stdout.write('inhabited regions:   {0}\n'.format(len(inhabited)))
         sys.stdout.write("connected regions:   {0}\n".format(len(connected)))
         sys.stdout.write("uninhabited regions: {0}\n".format(len(uninhabited)))
         sys.stdout.write('outside the border:  {0}\n'.format(len(outside)))
@@ -147,7 +147,7 @@ class Application(object):
         img = numpy.zeros((self.border * 2 + 1, self.border * 2 + 1, 4), 'uint8')
         for rx, rz in spawn:
             img[rz + self.border][rx + self.border] = [255, 255, 255, 255]
-        for rx, rz in keep:
+        for rx, rz in inhabited:
             img[rz + self.border][rx + self.border] = [0, 255, 0, 255]
         for rx, rz in connected:
             img[rz + self.border][rx + self.border] = [255, 255, 0, 255]
@@ -170,7 +170,7 @@ class Application(object):
                 last_update = datetime.datetime.fromtimestamp(os.path.getmtime(path))
                 now = datetime.datetime.now()
                 if last_update < now - datetime.timedelta(days=self.old):
-                    #os.remove(path)
+                    os.remove(path)
                     count += 1
         sys.stdout.write("deleted regions:   {0}\n".format(count))
     

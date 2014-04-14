@@ -12,6 +12,8 @@ value in chunks to determine which regions can be safely deleted.
 
 ## Usage
 
+**Important:** Before doing anything make sure that you have backups. You are using this program at your own risk. 
+
 ### Extracting the data from your world save
 
 Executing `extract` will generate a file called `world.json` in your working directory containing the accumulated inhabited time for each region.
@@ -64,6 +66,10 @@ Parameter | Unit | Default | Meaning
 
 The `--old` option will be ignored in `show` and only applied in `trim` which will report the actual number of deleted regions.
 The reasoning behind this is that these regions will be deleted eventually unless changed and the option is only there to protect newly generated regions.
+Additionally it is assumed that you are running `show` while the server is running which means that some regions may have been generated before running `trim`.
+
+Note that the counted ticks may be less than the time that players actually spent in your world if your server
+had problems with lag as is often the case in vanilla Minecraft.
 
 ### Cleaning up
 
