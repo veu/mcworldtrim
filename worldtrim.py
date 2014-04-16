@@ -68,8 +68,7 @@ class Application(object):
                 yield (index % 32 + rx * 32, index / 32 + rz * 32)
     
     def do_extract(self):
-        # load level
-        level = pymclevel.fromFile(os.path.join(self.world_path, "level.dat"))
+        # load folder
         folder = pymclevel.infiniteworld.AnvilWorldFolder(self.world_path)
         num_regions = sum(1 for i in self.iter_regions(folder))
 
@@ -89,14 +88,19 @@ class Application(object):
                 break
             rx, rz = region.regionCoords
             max_inhabited = 0
-            for cx, cz in self.iter_chunks(region):
-                if region.containsChunk(cx, cz):
-                    inhabited = level.getChunk(cx, cz).root_tag['Level']['InhabitedTime'].value
-                    max_inhabited = max(inhabited, max_inhabited)
+            try:
+                for cx, cz in self.iter_chunks(region):
+                    if region.containsChunk(cx, cz):
+                        root_tag = pymclevel.nbt.load(buf=region.readChunk(cx, cz))
+                        inhabited = root_tag['Level']['InhabitedTime'].value
+                        max_inhabited = max(inhabited, max_inhabited)
+            except:
+                sys.stderr.write("Ignoring r.{0}.{1}.mca because of errors.\n".format(rx, rz))
             self.region_data.append((rx, rz, max_inhabited))
             if len(self.region_data) % 10 == 0:
                 sys.stdout.write('{0:,} / {1:,} regions processed\n'.format(len(self.region_data), num_regions))
         
+        # write (partial) data
         with open(DATA_PATH, 'w') as f:
             json.dump(self.region_data, f)
         
