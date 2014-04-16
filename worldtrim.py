@@ -28,11 +28,12 @@ IMG = 'world.png'
 
 class Application(object):
 
-    def run(self, command=None, world_folder=None, border=None, spawn=None,
-            inhabited=None, old=None):
+    def run(self, command=None, world_folder=None, center=None, spawn=None,
+            border=None, inhabited=None, old=None):
         self.stop = False
-        self.border = border
+        self.center = center
         self.spawn = spawn
+        self.border = border
         self.inhabited = inhabited
         self.old = old
     
@@ -111,9 +112,9 @@ class Application(object):
 
         # mark uninhabited regions, spawn regions, and regions outside of the border
         for rx, rz, max_inhabited in region_data:
-            if max(abs(rx), abs(rz)) > self.border:
+            if max(abs(rx - self.center[0]), abs(rz - self.center[1])) > self.border:
                 outside.add((rx, rz))
-            elif max(abs(rx), abs(rz)) < self.spawn:
+            elif max(abs(rx - self.center[0]), abs(rz - self.center[1])) < self.spawn:
                 spawn.add((rx, rz))
             elif max_inhabited >= self.inhabited:
                 inhabited.add((rx, rz))
@@ -129,6 +130,10 @@ class Application(object):
         uninhabited = [region for region in uninhabited if not region in connected]
         return spawn, inhabited, connected, uninhabited, outside
     
+    def paint(self, img, regions, color):
+        for rx, rz in regions:
+            img[rz + self.border - self.center[1]][rx + self.border - self.center[0]] = color
+
     def show(self, region_data):
         spawn, inhabited, connected, uninhabited, outside = self.analyze(region_data)
     
@@ -143,14 +148,10 @@ class Application(object):
     
         # generate image
         img = numpy.zeros((self.border * 2 + 1, self.border * 2 + 1, 4), 'uint8')
-        for rx, rz in spawn:
-            img[rz + self.border][rx + self.border] = [255, 255, 255, 255]
-        for rx, rz in inhabited:
-            img[rz + self.border][rx + self.border] = [0, 255, 0, 255]
-        for rx, rz in connected:
-            img[rz + self.border][rx + self.border] = [255, 255, 0, 255]
-        for rx, rz in uninhabited:
-            img[rz + self.border][rx + self.border] = [255, 0, 0, 255]
+        self.paint(img, spawn, [255, 255, 255, 255])
+        self.paint(img, inhabited, [0, 255, 0, 255])
+        self.paint(img, connected, [255, 255, 0, 255])
+        self.paint(img, uninhabited, [255, 0, 0, 255])
     
         # save image
         scipy.misc.imsave(IMG, img)
@@ -187,9 +188,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage=USAGE)
     parser.add_argument("command")
     parser.add_argument("-b", "--border", action='store', type=int, default=6000,
-        dest='border', help="distance from 0,0 in regions (512m) beyond which all regions are deleted")
+        dest='border', help="distance from center in regions (512m) beyond which all regions are deleted")
+    parser.add_argument("-c", "--center", action='store', type=int, default=[0, 0], nargs=2,
+        dest='center', help="distance of center from 0,0 in regions (512m)")
     parser.add_argument("-s", "--spawn", action='store', type=int, default=16,
-        dest='spawn', help="distance from 0,0 in regions (512m) within which all regions are kept")
+        dest='spawn', help="distance from center in regions (512m) within which all regions are kept")
     parser.add_argument("-i", "--inhabited", action='store', type=int, default=18000,
         dest='inhabited', help="number of ticks before a chunk is considered inhabited")
     parser.add_argument("-o", "--old", action='store', type=int, default=60,
