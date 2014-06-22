@@ -4,6 +4,7 @@
 
 import sys
 import os
+import shutil
 import signal
 import json
 import numpy
@@ -42,6 +43,10 @@ class Application(object):
                 self.region_data = json.load(f)
         elif self.command in ('show', 'trim'):
             raise Exception("Please run extract first.")
+
+        # check if directory for deleted files exists
+        if not os.path.isdir(self.deleted_dir):
+            raise Exception("'{}' is not a directory.".format(self.deleted_dir))
 
         # make sure that ^C exits gracefully
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -171,7 +176,10 @@ class Application(object):
                 last_update = datetime.datetime.fromtimestamp(os.path.getmtime(path))
                 now = datetime.datetime.now()
                 if last_update < now - datetime.timedelta(days=self.old):
-                    os.remove(path)
+                    if self.deleted_dir:
+                        shutil.move(path, self.deleted_dir)
+                    else:
+                        os.remove(path)
                     count += 1
         sys.stdout.write("deleted regions:   {0}\n".format(count))
     
@@ -200,6 +208,8 @@ if __name__ == '__main__':
         dest='inhabited', help="number of ticks before a chunk is considered inhabited")
     parser.add_argument("-o", "--old", action='store', type=int, default=60,
         dest='old', help="number of days before a region is considered old")
+    parser.add_argument("-d", "--deleted-dir", action='store', type=str, default=None,
+        dest='deleted_dir', help="move trimmed regions to a different directory instead of deleting")
     args = parser.parse_args()
 
     try:
