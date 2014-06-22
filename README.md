@@ -72,6 +72,7 @@ Parameter | Unit | Default | Meaning
 `--spawn` | regions (512m) | 16 | Distance from 0,0 within which all regions are kept.
 `--inhabited` | ticks | 18000 | Time before a chunk is considered inhabited.
 `--old` | days | 60 | Time before a region is considered old
+`--deleted-dir` | | | If set trimmed regions will be moved to this directory instead of being deleted.
 
 The `--old` option is a safeguard to avoid deleting newly generated regions and is only applied in `trim`.
 A region has to be older than the specified value to be considered for deletion.
