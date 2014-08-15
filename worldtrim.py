@@ -45,7 +45,7 @@ class Application(object):
             raise Exception("Please run extract first.")
 
         # check if directory for deleted files exists
-        if not os.path.isdir(self.deleted_dir):
+        if self.deleted_dir and not os.path.isdir(self.deleted_dir):
             raise Exception("'{}' is not a directory.".format(self.deleted_dir))
 
         # make sure that ^C exits gracefully
